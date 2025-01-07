@@ -1,48 +1,25 @@
-int xPin = A0;
-int yPin = A1;
-int swPin = 2;
-
-int xCenter = 0;
-int yCenter = 0;
-int smoothFactor = 10;
-
-void setup() {
-  Serial.begin(9600);
-  pinMode(swPin, INPUT_PULLUP);
-  
-  xCenter = analogRead(xPin);
-  yCenter = analogRead(yPin);
+void setup() 
+{
+  Serial.begin(9600);      
+  pinMode(2, INPUT_PULLUP);
 }
 
-int smoothValue(int newValue, int previousValue) {
-  return (newValue + (previousValue * (smoothFactor - 1))) / smoothFactor;
-}
+void loop() 
+{
+  int xVal = analogRead(A0);
+  int yVal = analogRead(A1);
 
-void loop() {
-  static int xPrev = 0, yPrev = 0;
+  int xMove = map(xVal, 0, 1023, -5, 5);
+  int yMove = map(yVal, 0, 1023, -5, 5);
 
-  int xVal = analogRead(xPin);
-  int yVal = analogRead(yPin);
+  if (abs(xMove) < 2) xMove = 0;
+  if (abs(yMove) < 2) yMove = 0;
 
-  int xMove = xVal - xCenter;
-  int yMove = yVal - yCenter;
+  int buttonState = digitalRead(2) == LOW ? 1 : 0;
 
-  if (abs(xMove) < 5) xMove = 0;
-  if (abs(yMove) < 5) yMove = 0;
-
-  xMove = smoothValue(xMove, xPrev);
-  yMove = smoothValue(yMove, yPrev);
-
-  xPrev = xMove;
-  yPrev = yMove;
-
-  xMove = map(xMove, -512, 512, -10, 10);
-  yMove = map(yMove, -512, 512, -10, 10);
-
-  Serial.print("X:");
   Serial.print(xMove);
-  Serial.print(" Y:");
+  Serial.print(",");
   Serial.print(yMove);
-  Serial.print(" Button:");
-  Serial.println(digitalRead(swPin));
+  Serial.print(",");
+  Serial.println(buttonState);
 }

@@ -4,28 +4,22 @@ import pyautogui
 ser = serial.Serial('COM3', 9600)
 pyautogui.FAILSAFE = False
 
-sensitivity = 2.0
-deadzone = 2 
-button_pressed = False
+sensitivity = 4.0
 
 while True:
-    data = ser.readline().decode('utf-8').strip()
-    if data.startswith("X:"):
-        parts = data.split(" ")
-        x_move = int(parts[0].split(":")[1])
-        y_move = int(parts[1].split(":")[1])
-        button_state = int(parts[2].split(":")[1])
+    try:
+        data = ser.readline().decode('utf-8').strip()
+        if data:
+            x, y, button = map(int, data.split(','))
 
-        if abs(x_move) < deadzone:
-            x_move = 0
-        if abs(y_move) < deadzone:
-            y_move = 0
+            if abs(x) > 1 or abs(y) > 1:
+                pyautogui.moveRel(x * sensitivity, y * sensitivity)
 
-        pyautogui.move(x_move * sensitivity, y_move * sensitivity)
+            if button == 1:
+                pyautogui.click()
 
-        if button_state == 0 and not button_pressed:
-            pyautogui.mouseDown()
-            button_pressed = True
-        elif button_state == 1 and button_pressed:
-            pyautogui.mouseUp()
-            button_pressed = False
+    except KeyboardInterrupt:
+        print("Завершение работы.")
+        break
+    except Exception as e:
+        print(f"Ошибка: {e}")
